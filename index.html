@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="apple-touch-icon" sizes="57x57" href="./assets/images/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="./assets/images/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="./assets/images/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="./assets/images/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="./assets/images/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="./assets/images/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="./assets/images/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="./assets/images/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./assets/images/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="./assets/images/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./assets/images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="./assets/images/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./assets/images/favicon-16x16.png">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="./assets/images/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+    <script src="./sw.js"></script>
+    <title>Weather App</title>
+    <link rel="stylesheet" href="./assets/styles.css">
+</head>
+<body>
+    <!-- To Do
+        1. Add settings Page
+        2. Add location page - select location - location history - 
+        3. Add Theme selectors
+        4. Add Week view
+        5. Add ability to remove sections
+        6. Add monthl] and year view
+        7 Add animations
+    -->
+    <section class="wrapper">
+        <!-- <button class="btnAdd"> Add to Home Screen</button> -->
+        <div class="container">
+            <div class="sidebar">
+                <ul>
+                    <li id="hamburger"><span class="material-icons">reorder</span><span class="text">Weather</span></li>
+                    <li ><span class="material-icons">home</span> <span class="text">Home</span></li>
+                    <li class="location-button"><span class="material-icons">where_to_vote</span><span class="text">Locations</span></li>
+                    <li><span class="material-icons">settings</span> <span class="text">Settings</span></li>
+                </ul>
+            </div>
+            <main class="main-contents"></main>
+            <div class="main-detail">
+                <div class="city-info">
+                   
+                </div> 
+                <div class="tempreture">
+                    
+                
+                </div>
+                <div class="possibility">
+                    
+                </div>
+                <div class="bottom-widgets">
+                    <div class="widget-conatiner">
+                        <h4>Daily</h4>
+                        <div class="daily-widget">
+                            <div class="daily-record current">
+                                <header><p>Sun 15th</p></header>
+                                <main>
+                                    <img src="./assets//images/cloudy.svg" alt="icon">
+                                    <p>24 <span>21</span></p>
+                                </main>
+                                
+                                <footer>
+                                    <p>Mostly Cloudy</p>
+                                </footer>
+                            </div>
+                            <div class="daily-record">
+                                <header><p>Sun 15th</p></header>
+                                <main>
+                                    <img src="./assets/images/storm.svg" alt="icon">
+                                    <p>24 <span>21</span></p>
+                                </main>
+                                
+                                <footer>
+                                    <p>Light Rain</p>
+                                </footer>
+                            </div>
+                            <div class="daily-record">
+                                <header><p>Sun 15th</p></header>
+                                <main>
+                                    <img src="./assets/images/sunny.svg" alt="icon">
+                                    <p>24 <span>21</span></p>
+                                </main>
+                                
+                                <footer>
+                                    <p>Sunny</p>
+                                </footer>
+                            </div>
+
+                        </div>
+                        <div class="daily-graph">
+                            <canvas id="chart">
+
+                            </canvas>
+                        </div>
+                    </div>
+                    <div class="humidity-widget">
+
+                    </div> 
+                </div>
+                
+                
+            </div>
+        </div>
+        
+    </section>
+    <section class="location"> 
+        <h5>Select Location</h5> 
+        <div class="location-wrapper">
+            <div class="location-search">
+   
+                <input type="text" id="search-input" placeholder="Seach by city name">
+
+                <button class="search-btn">Search</button>
+                <button class="use-location">Use my Location</button>
+
+            </div>
+            <div class="location-history">
+                <h2>Your Searh History</h2>
+                
+            </div>
+        </div>
+            
+               
+    </section>
+</body>
+<script>
+
+    const registerServiceWorker =()=>{
+    if ("serviceWorker" in navigator) {
+    window.addEventListener('load', ()=>{
+        navigator.serviceWorker
+            .register("./sw.js")
+            .then(() => console.log("registered service worker!"))
+            .catch(err=>{
+                console.log('an error occured', err)
+            })
+    })  
+    }
+    }
+    registerServiceWorker()
+
+    
+    let hamburger = document.querySelector('#hamburger')
+    let sidebar = document.querySelector(".sidebar")
+    let span = document.querySelectorAll('.text')
+    let locationBtn = document.querySelector('.location-button')
+    let dashboard = document.querySelector('.main-detail')
+    let locationSection = document.querySelector('.location')
+    let main = document.querySelector('.main-contents')
+    const cityInfo = document.querySelector('.city-info')
+    const degree = document.querySelector('.degree')
+    const possibility = document.querySelector('.possibility')
+    const humidityWidget = document.querySelector('.humidity-widget')
+    const temperature = document.querySelector('.tempreture')
+    const history = document.querySelector('.hitory')
+    const searchBtn = document.querySelector('.search-btn')
+    const cityInput = document.querySelector('#search-input')
+    const geolocationBtn  = document.querySelector('.use-location')
+    
+    locationHistory =[]
+    
+    hamburger.addEventListener('click', ()=>{
+        span.forEach(spn=> {
+            if(spn.classList =='text'){
+                spn.classList.remove('text')
+                spn.classList.toggle('show-text')
+            }else{
+                spn.classList.remove('show-text')
+                spn.classList.toggle('text')
+            }
+            
+           
+        })
+         sidebar.classList.toggle("active");
+    })
+
+    const checkDatabase = JSON.parse(localStorage.getItem('locations'))
+    if(checkDatabase == '' || checkDatabase == null || checkDatabase == undefined){
+        const getUserLocation = () =>{
+        function success  (position)  {
+            lat = Math.round( position.coords.latitude * 1000) / 1000
+            lon = Math.round (position.coords.longitude * 1000) /1000
+            codnts = {lat, lon}
+            localStorage.setItem ('cordinates', JSON.stringify( codnts))
+        }
+
+
+        function error() {
+            alert ('Unable to retrieve your location');
+        }
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(success, error);
+        } else {
+           alert("Your browser does not support geolocation");
+        }     
+    } 
+        getUserLocation()
+        // location.reload();
+
+    }
+    
+    const setHistoryData = ( ) =>{
+        const locationHistory = document.querySelector('.location-history')
+        const history = JSON.parse(localStorage.getItem('locations'))
+        if(history == '' || history == null || history == undefined){
+            locationHistory.innerHTML = `<p>You dont have any history yet</p>`
+        }else{
+            const data = history.forEach(hist => {
+            const li = document.createElement('li')
+            li.innerHTML = hist
+            locationHistory.appendChild(li)
+        })
+        }
+        
+      
+    }
+    
+    const toggleDashboard =() => {
+        dashboard.classList.toggle('hide-dashboard')
+        setHistoryData()
+        hideSearchButton()
+        locationSection.classList.toggle('show-location')
+        main.appendChild(locationSection)
+
+    }
+    locationBtn.addEventListener('click', toggleDashboard)
+
+    let hourlyData =[]
+
+     const searchUserLocation = () =>{
+        fetch(`https://api.openweathermap.org/data/2.5/weather?q=${cityInput.value}&appid=4aa3ff295be247b16c993427526fcaab`)
+        .then(response => response.json())
+        .then(response => {
+        //    console.log( 'here is', response)
+            if(response.cod == 200){
+                // console.log(response)
+               localStorage.setItem('cityInfo', JSON.stringify( response))
+              
+        
+            localStorage.setItem ('cordinates', JSON.stringify( response.coord)) 
+            locationHistory.push(cityInput.value)
+            localStorage.setItem('locations', JSON.stringify(locationHistory))
+            toggleDashboard()
+            location.reload();
+            }
+            else{
+            //    console.log(response.message)
+               const div = document.createElement('div')
+               div.classList.add('modal')
+               div.innerHTML = `<div>
+                <h3>${response.message}</h3>
+                <button class="modal-close">&times</button>
+               </div>`
+                main.appendChild(div)
+
+                const hideModal=()=>{
+                        main.removeChild(div)
+                }
+                document.querySelector('.modal-close').addEventListener('click', hideModal)
+
+               setTimeout(  hideModal, 5000)
+           }
+         
+           
+        }) };   
+
+
+     const getUserLocation = () =>{
+        function success  (position)  {
+            lat = Math.round( position.coords.latitude * 1000) / 1000
+            lon = Math.round (position.coords.longitude * 1000) /1000
+            codnts = {lat, lon}
+            localStorage.setItem ('cordinates', JSON.stringify( codnts))
+            console.log(codnts)
+            toggleDashboard()
+        }
+
+
+        function error() {
+            alert ('Unable to retrieve your location');
+        }
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(success, error);
+        } else {
+           alert("Your browser does not support geolocation");
+        }     
+    }
+
+    hideSearchButton = () =>{
+        searchBtn.style.display= 'none'
+        cityInput.addEventListener('input', ()=>{
+            if(cityInput.value===''){
+                searchBtn.style.display= 'none'
+            }
+            else{
+               
+                searchBtn.style.display='block'
+            }
+           
+        })
+       
+        
+    }
+   
+    geolocationBtn.addEventListener('click', getUserLocation)
+    searchBtn.addEventListener('click', searchUserLocation)
+
+   
+    const APIID = '4aa3ff295be247b16c993427526fcaab'
+    const units = 'metric'
+    const cordinates = JSON.parse(localStorage.getItem('cordinates'))
+    let date = Math.floor( Date.now() / 1000 )
+
+    
+    const URL = `http://api.openweathermap.org/data/2.5/onecall/timemachine?lat=${cordinates.lat}&lon=${cordinates.lon}&dt=${date}&units=${units}&appid=${APIID}`
+    const getWeather= () =>{
+        fetch(URL)
+        .then(res => res.json())
+        .then(data=>{
+            // console.log(data)
+            const {hourly, current } = data
+            const {weather} = current
+            hourlyData.push(hourly)
+           
+            const sunriseTime = current.sunrise;
+            const sunrise = new Date(sunriseTime * 1000);
+            const sunshine =`${sunrise.getHours()} : ${sunrise.getMinutes() } AM`
+
+            const sunsetTime = current.sunset
+            const sunset = new Date(sunsetTime * 1000)
+            const sundown = `${sunset.getHours()} : ${sunset.getMinutes()} PM`
+  
+           
+            chartData = []
+            chartLabel =[]
+            const getHourlyData = () =>{
+                hourlyData[0].forEach(data =>{
+                    chartData.push( data.temp)
+                    currentHour = new Date(data.dt * 1000).getHours() 
+                    chartLabel.push(currentHour)
+                    })
+            }
+            getHourlyData()
+            let cityName = JSON.parse(localStorage.getItem('cityInfo'))
+            if(cityName == undefined || cityName == null || cityName== ''){
+                const url = "https://geolocation-db.com/json/";
+                fetch(url)
+                .then(response =>{
+                    return response.json()
+                })
+                .then(data =>{
+                    cityData = `
+                <p id='city-name'>${data.city}</p>
+                    <div class="degree">
+                        <h3>${Math.round(current.temp)}</h3>
+                        <div class="degree-selector">
+                            <p class="selected">C</p>
+                            <p>F</p>
+                        </div>
+                    </div>
+                    <p class="status">${weather[0].description.toUpperCase()}</p>
+                </div>
+                `
+                cityInfo.innerHTML = cityData
+                })
+                
+                
+            }
+            else{
+                cityData = `
+                <p id='city-name'>${cityName.name}</p>
+                    <div class="degree">
+                        <h3>${Math.round(current.temp)}</h3>
+                        <div class="degree-selector">
+                            <p class="selected">C</p>
+                            <p>F</p>
+                        </div>
+                    </div>
+                    <p class="status">${weather[0].description.toUpperCase()}</p>
+                </div>`
+                cityInfo.innerHTML = cityData
+            }
+            
+
+                const TemData = `
+                 <div class="title">
+                        <h4>Temperature</h4>
+                    </div>
+                    <div class="temp-contents">
+                        <div class="left">
+                            <div>
+                                <p>Record High</p>
+                                <span>${Math.max(...chartData)}</span>
+                            </div>
+                            <div>
+                                 <p>Record Low</p>
+                                 <span>${Math.round( Math.min(...chartData))}</span>
+                            </div>
+                        </div>
+                        <div class="center">
+                            <div class="tube"></div>
+                            <div class="circle"></div>
+                        </div>
+                        <div class="right">
+                            <div>
+                                <p>Average High</p>
+                                <span>${Math.round(chartData.reduce((a, b) => a + b) / chartData.length)}</span>
+                            </div>
+                           <div>
+                            <p>Average Low</p>
+                            <span>${ Math.min(...chartData)}</span>
+                           </div>
+                            
+                        </div>
+                        </div>
+            `
+            temperature.innerHTML = TemData;
+           
+            humidityData =`
+                     <div class="humidity-left">
+                            <div class="sunrise">
+                                    <h5>Sunrise</h5>
+                                    <div class="time">
+                                       <span>▲</span>${sunshine}
+                                    </div>
+                            </div>
+                            <div class="sunset">
+                                <h5>Sunset</h5>
+                                <div class="time">
+                                   <span>▼</span> ${sundown}
+                                </div>
+                        </div>
+                        <div class="rain">
+                            <div class="record-rain">
+                                <h5>Record Rain</h5>
+                                <div class="time">
+                                   <span>▲</span> 33 CM (1991)
+                                </div>
+                            </div>
+                            <div class="average-rain">
+                                <h5>Average Rain</h5>
+                                <div class="time">
+                                   <span>▼</span> 21 CM 
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                        <div class="humidity-right">
+                            <div class="humidity-percentage">
+                                 <h4>Humidity</h4>
+                                <div class="rate humidity-rate">
+                                    ${current.humidity}
+                                </div>
+                            </div>
+                            <div class="max-wind">
+                                <h4>Wind Speed</h4>
+                                <div class="rate">
+                                    ${current.wind_speed}
+                                    <span>MPS</span>
+                                </div>
+                            </div>
+                        </div>
+            `
+            humidityWidget.innerHTML = humidityData;
+
+            
+
+    
+            if(weather[0].main.id = 804){
+            posibilityData = `
+            <p>Possibility</p>
+            <h3>70%</h3>
+                <p class="advice">Advice: 
+                <br> Event goers should expect cloudy wheather </p>
+            `
+            }
+            else if(weather[0].main == "Rain"){
+            posibilityData = `
+            <p>No data</p>
+            <h3>90%</h3>
+            <p class="advice">Advice: 
+            <br> Only go with your ubrella</p>
+            `
+            }
+           
+            var ctx = document.getElementById('chart').getContext('2d');
+            var tempChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: chartLabel,
+        datasets: [{
+            label: 'Hourly Temperature',
+            data: chartData,
+            backgroundColor: [
+                'darkcyan'
+            ]
+        }]
+    },
+    options: {
+        maintainAspectRatio: false,
+
+        // legend: {
+        //     display: false,
+        // },
+        scales: {
+        xAxes: [{
+            gridLines: {
+                display:false,
+            }
+        }],
+        yAxes: [{
+            gridLines: {
+                display:false,
+            }   
+        }]
+    
+        }
+    }
+});
+
+            
+            possibility.innerHTML=  posibilityData
+        })
+        
+        
+        
+    }
+    getWeather()
+
+    
+
+</script>
+<!-- <script src="./assets/app.js"></script> -->
+</html>
